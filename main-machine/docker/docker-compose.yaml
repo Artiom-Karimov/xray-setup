@@ -1,0 +1,49 @@
+services:
+  # Это сайт-заглушка, который будет открываться на обычный запрос
+  website:
+    container_name: website
+    image: nginx:latest
+    restart: unless-stopped
+    networks:
+      - mynet
+
+  # Это основной прокси, за которым спрятано всё остальное
+  nginx:
+    container_name: nginx
+    image: nginx:latest
+    restart: unless-stopped
+    depends_on:
+      - xray
+      - website
+    ports:
+      - 80:80
+      - 443:443
+    volumes:
+      - ./nginx/:/etc/nginx/conf.d/:ro
+      - ./certbot/conf:/etc/letsencrypt:ro
+      - ./certbot/www:/var/www/certbot:ro
+    networks:
+      - mynet
+
+  # Это VLESS-сервер, который перенаправляет наш трафик
+  xray:
+    container_name: xray
+    image: teddysun/xray:latest
+    restart: unless-stopped
+    volumes:
+      - ./xray/config.json:/etc/xray/config.json:ro
+    networks:
+      - mynet
+
+  # Это бот, который будет обновлять сертификаты
+  certbot:
+    container_name: certbot
+    image: certbot/certbot
+    volumes:
+      - ./certbot/conf:/etc/letsencrypt:rw
+      - ./certbot/www:/var/www/certbot:rw
+    command: certonly --webroot -w /var/www/certbot --email ${EMAIL} -d ${DOMAIN_NAME} --agree-tos --no-eff-email
+
+networks:
+  mynet:
+    driver: bridge
