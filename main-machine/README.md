@@ -10,6 +10,11 @@ nano nginx/nginx.conf
 Заменяем содержимое файла:
 
 ```nginx
+map $http_upgrade $connection_upgrade {
+    default upgrade;
+    ''      close;
+}
+
 server {
     listen 80;
     listen [::]:80;
