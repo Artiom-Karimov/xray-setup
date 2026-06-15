@@ -3,9 +3,16 @@ services:
     container_name: nginx
     image: nginx:latest
     restart: unless-stopped
+    depends_on:
+      - xray
+      - website
     ports:
       - 80:80
       - 443:443
+    volumes:
+      - ./nginx/:/etc/nginx/conf.d/:ro
+      - ./certbot/conf:/etc/letsencrypt:ro
+      - ./certbot/www:/var/www/certbot:ro
     networks:
       - mynet
 
