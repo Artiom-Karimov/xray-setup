@@ -74,9 +74,6 @@ services:
     container_name: nginx
     image: nginx:latest
     restart: unless-stopped
-    depends_on:
-      - xray
-      - website
     ports:
       - 80:80
       - 443:443
