@@ -90,43 +90,6 @@ server {
 docker compose up -d
 ```
 
-### Скрипт для обновления сертификата
-Нужно периодически перезапускать `certbot` и `nginx`, чтобы сертификат обновлялся прежде, чем истечёт его срок действия.
-
-Создаём скрипт:
-```shell
-nano ssl-renew.sh
-```
-
-Прописываем:
-```shell
-#!/bin/bash
-set -e
-
-cd /home/admin/docker
-
-# Запускаем certbot только на renew и удаляем контейнер после завершения
-/usr/bin/docker compose -f docker-compose.yaml run --rm certbot renew --no-random-sleep-on-renew
-
-# Перезагружаем nginx, чтобы он подхватил новые сертификаты
-/usr/bin/docker compose -f docker-compose.yaml exec nginx nginx -s reload
-```
-
-Делаем скрипт исполняемым:
-```shell
-chmod +x ssl-renew.sh
-```
-
-Добавляем скрипт в cron, чтобы выполнялся по расписанию:
-```shell
-sudo crontab -e
-```
-
-Прописываем:
-```shell
-0 3 * * * /bin/bash /home/admin/docker/ssl-renew.sh >> /var/log/certbot-renew.log 2>&1
-```
-
 Готово. С прокси-машиной всё.
 
 [Вернуться на главную](../README.md)
